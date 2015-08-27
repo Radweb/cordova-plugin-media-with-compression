@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-media-with-compression-fork",
-  "version": "1.0.2-dev",
+  "version": "1.0.3-dev",
   "description": "Cordova Media Plugin",
   "cordova": {
     "id": "cordova-plugin-media",

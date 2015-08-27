@@ -17,6 +17,10 @@
          under the License.
 -->
 
+This is just a [fork of `cordova-plugin-media-with-compression`](https://github.com/remoorejr/cordova-plugin-media-with-compression) so that I can get it on npm quickly.
+
+---
+
 # cordova-plugin-media-with-compression
 
 This plugin is a modified version of cordova-plugin-media that provides the ability to record and play back audio files on a device.
@@ -53,7 +57,7 @@ Although in the global scope, it is not available until after the `deviceready` 
 
 ## Installation
 
-    cordova plugin add com.alphasoftware.plugins.media.withcompression
+    cordova plugin add cordova-plugin-media-with-compression-fork
 
 ## Supported Platforms
 
