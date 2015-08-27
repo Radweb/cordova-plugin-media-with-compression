@@ -21,7 +21,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
 id="cordova-plugin-media-with-compression-fork"
-version="1.0.3">
+version="1.0.4">
 
     <name>Media With Compression: Alpha Software Edition</name>
     <description>Cordova Media Plugin with MPEG 4 audio compression for iOS and Android</description>
@@ -30,10 +30,6 @@ version="1.0.3">
     <repo>https://github.com/Radweb/cordova-plugin-media-with-compression</repo>
     <!-- <issue>https://issues.apache.org/jira/browse/CB/component/12320647</issue> -->
 	
-	<engines>
-		<engine name="cordova" version="&gt;=3.0.0" />
-	</engines>
-    
     <dependency id="cordova-plugin-file" version=">=2.0.0" />
 
     <js-module src="www/MediaError.js" name="MediaError">
