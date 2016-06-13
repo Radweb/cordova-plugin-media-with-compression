@@ -169,8 +169,8 @@ public class AudioHandler extends CordovaPlugin {
             }
             
             // set defaults
-            sampleRate = 44100;
-            channels = 1;
+            audioSampleRate = 44100;
+            audioChannels = 1;
 
             JSONObject options = args.getJSONObject(2);
 
