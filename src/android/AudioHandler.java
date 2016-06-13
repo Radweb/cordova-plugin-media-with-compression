@@ -21,7 +21,9 @@ package org.apache.cordova.media;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaResourceApi;
+import org.apache.cordova.PermissionHelper;
 
+import android.Manifest;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -59,6 +61,16 @@ public class AudioHandler extends CordovaPlugin {
     private int audioChannels;
     private int audioSampleRate;
 
+    public static String[] permissions = { Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE };
+    public static int RECORD_AUDIO = 0;
+    public static int WRITE_EXTERNAL_STORAGE = 1;
+
+    public static int FROM_RECORD = 0;
+    public static int FROM_COMPRESSED_RECORD = 1;
+
+    private String recordId;
+    private String fileUriStr;
+
     /**
      * Constructor.
      */
@@ -67,6 +79,55 @@ public class AudioHandler extends CordovaPlugin {
         this.pausedForPhone = new ArrayList<AudioPlayer>();
         this.audioChannels = 1;
         this.audioSampleRate = 41000;
+    }
+
+    protected void getWritePermission(int requestCode)
+    {
+        PermissionHelper.requestPermission(this, requestCode, permissions[WRITE_EXTERNAL_STORAGE]);
+    }
+
+    protected void getMicPermission(int requestCode)
+    {
+        PermissionHelper.requestPermission(this, requestCode, permissions[RECORD_AUDIO]);
+    }
+
+    protected void promptForRecord(int requestCode)
+    {
+        if (hasPermissionToRecord())
+        {
+            if (requestCode == FROM_RECORD) {
+                this.startRecordingAudio(recordId, FileHelper.stripFileProtocol(fileUriStr));
+            } else {
+                this.startRecordingAudioWithCompression(recordId, FileHelper.stripFileProtocol(fileUriStr), audioChannels, audioSampleRate);
+            }
+        }
+        else if (PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO]))
+        {
+            getWritePermission(requestCode);
+        }
+        else
+        {
+            getMicPermission(requestCode);
+        }
+    }
+
+    private boolean hasPermissionToRecord() {
+        return PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE]) &&
+               PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO]);
+    }
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException
+    {
+        for (int r: grantResults)
+        {
+            if (r == PackageManager.PERMISSION_DENIED)
+            {
+                this.messageChannel.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+                return;
+            }
+        }
+
+        promptForRecord(requestCode);
     }
 
     /**
@@ -82,20 +143,21 @@ public class AudioHandler extends CordovaPlugin {
         String result = "";
 
         if (action.equals("startRecordingAudio")) {
+            recordId = args.getString(0);
             String target = args.getString(1);
-            String fileUriStr;
             try {
                 Uri targetUri = resourceApi.remapUri(Uri.parse(target));
                 fileUriStr = targetUri.toString();
             } catch (IllegalArgumentException e) {
                 fileUriStr = target;
             }
-            this.startRecordingAudio(args.getString(0), FileHelper.stripFileProtocol(fileUriStr));
+//            this.startRecordingAudio(args.getString(0), FileHelper.stripFileProtocol(fileUriStr));
+            this.promptForRecord(FROM_RECORD);
         }
 		
         else if (action.equals("startRecordingAudioWithCompression")) {
+            recordId = args.getString(0);
             String target = args.getString(1);
-            String fileUriStr;
             try {
                 Uri targetUri = resourceApi.remapUri(Uri.parse(target));
                 fileUriStr = targetUri.toString();
@@ -104,23 +166,22 @@ public class AudioHandler extends CordovaPlugin {
             }
             
             // set defaults
-            Integer sampleRate = 44100;
-            Integer channels = 1;
+            sampleRate = 44100;
+            channels = 1;
 
             JSONObject options = args.getJSONObject(2);
 
-            try {
-                channels = options.getInt("NumberOfChannels");
-                sampleRate = options.getInt("SampleRate");
-            } catch (JSONException e) {
-                channels = 1;
-                sampleRate = 44100;
-            }
             // for use within resumeRecord, these values must be consistent when resume record is called.
-            this.audioChannels = channels;
-            this.audioSampleRate = sampleRate;
+            try {
+                this.audioChannels = options.getInt("NumberOfChannels");
+                this.audioSampleRate = options.getInt("SampleRate");
+            } catch (JSONException e) {
+                this.audioChannels = 1;
+                this.audioSampleRate = 44100;
+            }
 
-            this.startRecordingAudioWithCompression(args.getString(0), FileHelper.stripFileProtocol(fileUriStr), channels, sampleRate);
+//            this.startRecordingAudioWithCompression(recordId, FileHelper.stripFileProtocol(fileUriStr), channels, sampleRate);
+            this.promptForRecord(FROM_COMPRESSED_RECORD);
         }
         else if (action.equals("pauseRecordingAudio")) {
             this.pauseRecordingAudio(args.getString(0));
