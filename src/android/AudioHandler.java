@@ -69,6 +69,8 @@ public class AudioHandler extends CordovaPlugin {
     public static int FROM_RECORD = 0;
     public static int FROM_COMPRESSED_RECORD = 1;
 
+    public static final int PERMISSION_DENIED_ERROR = 20;
+
     private String recordId;
     private String fileUriStr;
 
