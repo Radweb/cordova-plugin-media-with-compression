@@ -25,6 +25,7 @@ import org.apache.cordova.PermissionHelper;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.util.Log;
